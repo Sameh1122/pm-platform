@@ -4,48 +4,62 @@
   <title>Home</title>
   <link rel="stylesheet" href="/styles.css">
   <style>
-    .grid{display:grid; gap:12px; grid-template-columns: repeat(auto-fill,minmax(220px,1fr))}
-    .tile{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px}
-    .kpi{font-size:28px; font-weight:700; margin:2px 0 6px}
-    .muted{color:var(--muted); font-size:14px}
+    .muted{color:#94a3b8;font-size:13px}
+    .hero{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+    .cta{display:flex;gap:8px}
+    .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    @media(max-width:900px){.tiles{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:600px){.tiles{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <%- include('partials/header') %>
 
-  <div class="container" style="max-width:980px;">
-    <div class="card">
-      <h2 style="margin:0 0 12px">Insights</h2>
-      <div class="grid">
+  <div class="container">
+    <% if (!user) { %>
+      <!-- Visitor view -->
+      <div class="card">
+        <div class="hero">
+          <h1>Welcome</h1>
+          <p class="muted">Please sign up or log in to continue.</p>
+          <div class="cta">
+            <a class="btn" href="/signup">Sign up</a>
+            <a class="btn btn-outline" href="/login">Login</a>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- Signed-in view: نفس الشكل لكل الأدوار -->
+      <h1>Welcome <%= user.name || user.email %></h1>
+      <p class="muted">High-level overview. Use your Dashboard to manage anything.</p>
+
+      <div class="tiles">
         <div class="tile">
-          <div class="kpi"><%= insights.totalProjects %></div>
+          <div class="kpi"><%= (insights && insights.totalProjects) || 0 %></div>
           <div class="muted">Total Projects</div>
         </div>
         <div class="tile">
-          <div class="kpi"><%= insights.totalAgile %></div>
-          <div class="muted">Agile</div>
-        </div>
-        <div class="tile">
-          <div class="kpi"><%= insights.totalWaterfall %></div>
-          <div class="muted">Waterfall</div>
-        </div>
-        <div class="tile">
-          <div class="kpi"><%= insights.totalUsers %></div>
+          <div class="kpi"><%= (insights && insights.totalUsers) || 0 %></div>
           <div class="muted">Approved Users</div>
         </div>
-
-        <% if (user) { %>
-          <div class="tile">
-            <div class="kpi"><%= insights.myProjectsCount %></div>
-            <div class="muted">My Projects</div>
-          </div>
-          <div class="tile">
-            <div class="kpi"><%= insights.myAssignmentsCount %></div>
-            <div class="muted">My Assignments</div>
-          </div>
-        <% } %>
+        <div class="tile">
+          <div class="kpi"><%= (insights && insights.myProjects) || 0 %></div>
+          <div class="muted">My Projects</div>
+        </div>
+        <div class="tile">
+          <div class="kpi"><%= (insights && insights.myAssigns) || 0 %></div>
+          <div class="muted">My Assignments</div>
+        </div>
       </div>
-    </div>
+
+      <div class="card" style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <h3 style="margin:0 0 6px 0">Go to your workspace</h3>
+          <p class="muted" style="margin:0">All actions live inside your role dashboard.</p>
+        </div>
+        <a class="btn" href="/dashboard">Go to Dashboard</a>
+      </div>
+    <% } %>
   </div>
 </body>
 </html>

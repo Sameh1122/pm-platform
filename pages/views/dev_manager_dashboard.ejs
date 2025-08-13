@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Developer Manager · Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .muted{color:#94a3b8;font-size:13px}
+    .owner{font-size:13px;color:#cbd5e1}
+    .select-inline{min-width:240px}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <div class="container">
+    <h1 style="margin:0 0 8px 0">Developer Manager</h1>
+    <div class="muted">Assign or change the Developer per project.</div>
+
+    <% if (!devRole) { %>
+      <div class="card" style="margin-top:12px;border-left:4px solid #ef4444">
+        Role "Developer" not found. Please create it first.
+      </div>
+    <% } %>
+
+    <div class="card" style="margin-top:12px">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Project</th>
+            <th>Owner</th>
+            <th>Current Developer</th>
+            <th>Assign / Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!projects.length) { %>
+            <tr><td colspan="5" class="muted">No projects yet.</td></tr>
+          <% } else { %>
+            <% projects.forEach(function(p){
+                let currentDev = null;
+                if (p.assignments && p.assignments.length && devRole) {
+                  const hit = p.assignments.find(a => a.roleId === devRole.id);
+                  if (hit) currentDev = hit.user;
+                }
+            %>
+              <tr>
+                <td><%= p.id %></td>
+                <td><%= p.name %> <span class="muted">(<%= p.methodology %>)</span></td>
+                <td class="owner"><%= p.owner?.name || p.owner?.email || '—' %></td>
+                <td><%= currentDev ? (currentDev.name || currentDev.email) : '—' %></td>
+                <td>
+                  <form method="POST" action="/manager/assign-dev" style="display:flex; gap:8px; align-items:center">
+                    <input type="hidden" name="projectId" value="<%= p.id %>">
+                    <select class="input select-inline" name="userId" <%= !devRole ? 'disabled' : '' %>>
+                      <option value="">-- Unassign Developer --</option>
+                      <% devUsers.forEach(function(u){ %>
+                        <option value="<%= u.id %>" <%= (currentDev && currentDev.id === u.id ? 'selected' : '') %>>
+                          <%= u.name || u.email %>
+                        </option>
+                      <% }) %>
+                    </select>
+                    <button class="btn" type="submit" <%= !devRole ? 'disabled' : '' %>>Save</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

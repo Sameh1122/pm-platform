@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin · Control Panel</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>.muted{color:#94a3b8;font-size:13px}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}@media(max-width:900px){.cards{grid-template-columns:1fr}}</style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <div class="container">
+    <h1 style="margin:0 0 8px 0">Admin Dashboard</h1>
+    <p class="muted">Manage roles, features, and high-level settings.</p>
+
+    <div class="tiles" style="margin:16px 0">
+      <div class="tile">
+        <div class="kpi"><%= (stats && stats.totalProjects) || 0 %></div>
+        <div class="muted">Total Projects</div>
+      </div>
+      <div class="tile">
+        <div class="kpi"><%= (stats && stats.totalApproved) || 0 %></div>
+        <div class="muted">Approved Users</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3 style="margin:0 0 6px 0">Roles Management</h3>
+        <p class="muted">Create/edit roles and their permissions.</p>
+        <a class="btn" href="/admin/roles">Open</a>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 6px 0">Role × Feature</h3>
+        <p class="muted">Grant or revoke features per role/user.</p>
+        <a class="btn" href="/admin/features">Open</a>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 6px 0">Assignable Matrix</h3>
+        <p class="muted">Control which Manager assigns which Role.</p>
+        <a class="btn" href="/assignable">Open</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

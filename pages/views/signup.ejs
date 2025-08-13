@@ -1,34 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Sign Up</title>
+  <title>Sign up</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <%- include('partials/header') %>
-  <div class="container" style="max-width:720px;">
-    <div class="card">
-      <h1>Create Account</h1>
-      <form action="/signup" method="post">
-        <div class="row">
-          <input class="input" type="text" name="name" placeholder="Name" style="flex:1">
-          <input class="input" type="email" name="email" placeholder="Email" required style="flex:1">
-        </div>
-        <div class="row" style="margin-top:12px;">
-          <input class="input" type="password" name="password" placeholder="Password" required style="flex:1">
-          <select class="input" name="roleId" required style="flex:1">
-            <option value="">-- Select Role --</option>
-            <% roles.forEach(function(role) { %>
-              <option value="<%= role.id %>"><%= role.name %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="row" style="margin-top:16px;">
-          <button class="btn" type="submit">Sign Up</button>
-          <a class="btn btn-outline" href="/login">Login</a>
-        </div>
-      </form>
-    </div>
+  <div class="container" style="max-width:600px">
+    <h1>Sign up</h1>
+    <% if (error) { %><div class="card" style="border-left:4px solid #ef4444"><%= error %></div><% } %>
+    <form method="POST" action="/signup">
+      <div class="field"><label>Name</label><input class="input" type="text" name="name"></div>
+      <div class="field"><label>Email</label><input class="input" type="email" name="email" required></div>
+      <div class="field"><label>Password</label><input class="input" type="password" name="password" required></div>
+      <div class="field">
+        <label>Role</label>
+        <select class="input" name="roleId" required>
+          <option value="">-- Select Role --</option>
+          <% (roles || []).forEach(function(r){ %>
+            <option value="<%= r.id %>"><%= r.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <button class="btn" type="submit">Create account</button>
+      <a class="btn btn-outline" href="/login" style="margin-left:8px">Login</a>
+    </form>
   </div>
 </body>
 </html>

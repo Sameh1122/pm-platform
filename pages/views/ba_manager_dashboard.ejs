@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BA Manager · Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .muted{color:#94a3b8;font-size:13px}
+    .owner{font-size:13px;color:#cbd5e1}
+    .select-inline{min-width:240px}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <div class="container">
+    <h1 style="margin:0 0 8px 0">Business Analyst Manager</h1>
+    <div class="muted">Assign or change the Business Analyst per project.</div>
+
+    <% if (!baRole) { %>
+      <div class="card" style="margin-top:12px;border-left:4px solid #ef4444">
+        Role "Business Analyst" not found. Please create it first.
+      </div>
+    <% } %>
+
+    <div class="card" style="margin-top:12px">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Project</th>
+            <th>Owner</th>
+            <th>Current BA</th>
+            <th>Assign / Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!projects.length) { %>
+            <tr><td colspan="5" class="muted">No projects yet.</td></tr>
+          <% } else { %>
+            <% projects.forEach(function(p){ 
+                let currentBA = null;
+                if (p.assignments && p.assignments.length && baRole) {
+                  const hit = p.assignments.find(a => a.roleId === baRole.id);
+                  if (hit) currentBA = hit.user;
+                }
+            %>
+              <tr>
+                <td><%= p.id %></td>
+                <td><%= p.name %> <span class="muted">(<%= p.methodology %>)</span></td>
+                <td class="owner"><%= p.owner?.name || p.owner?.email || '—' %></td>
+                <td><%= currentBA ? (currentBA.name || currentBA.email) : '—' %></td>
+                <td>
+                  <form method="POST" action="/manager/assign-ba" style="display:flex; gap:8px; align-items:center">
+                    <input type="hidden" name="projectId" value="<%= p.id %>">
+                    <select class="input select-inline" name="userId" <%= !baRole ? 'disabled' : '' %>>
+                      <option value="">-- Unassign BA --</option>
+                      <% baUsers.forEach(function(u){ %>
+                        <option value="<%= u.id %>" <%= (currentBA && currentBA.id === u.id ? 'selected' : '') %>>
+                          <%= u.name || u.email %>
+                        </option>
+                      <% }) %>
+                    </select>
+                    <button class="btn" type="submit" <%= !baRole ? 'disabled' : '' %>>Save</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

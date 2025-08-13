@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin · Features Control</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab-btn{
+      padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);color:#e2e8f0
+    }
+    .tab-btn.active{
+      background:linear-gradient(to bottom right, rgba(99,102,241,.25), rgba(99,102,241,.12));
+      border-color:rgba(99,102,241,.4)
+    }
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    @media(max-width:900px){.row{grid-template-columns:1fr 1fr}}
+    @media(max-width:600px){.row{grid-template-columns:1fr}}
+    .flash{margin-bottom:12px;padding:10px;border-radius:10px;border:1px solid rgba(99,102,241,.35);
+      background:linear-gradient(180deg, rgba(99,102,241,.12), rgba(99,102,241,.06)); color:#c7d2fe}
+    .subtle{color:#94a3b8;font-size:13px}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <div class="container">
+    <h1 style="margin:0 0 8px 0">Features Control</h1>
+    <div class="subtle">Assign or revoke role-based features and review current grants and user permissions.</div>
+
+    <% if (flash) { %><div class="flash"><%= flash %></div><% } %>
+
+    <div class="tabs">
+      <button class="tab-btn <%= (filters.tab === 'role' ? 'active' : '') %>" data-tab="role">Role Submission</button>
+      <button class="tab-btn <%= (filters.tab === 'grants' ? 'active' : '') %>" data-tab="grants">Current Role Grants</button>
+      <button class="tab-btn <%= (filters.tab === 'user' ? 'active' : '') %>" data-tab="user">User Permissions</button>
+    </div>
+
+    <!-- TAB 1: Role Submission -->
+    <div id="tab-role" class="tab-content <%= (filters.tab === 'role' ? 'active' : '') %>">
+      <div class="card">
+        <div class="field">
+          <label>Quick name filter</label>
+          <input class="input" type="text" id="quickFilterSubmission" placeholder="Type to filter…">
+          <div class="subtle">Filters visible dropdowns (Role/User/Feature) depending on Target.</div>
+        </div>
+
+        <form method="POST" action="/admin/features/apply">
+          <div class="row">
+            <div class="field">
+              <label>Target</label>
+              <select class="input" name="targetType" id="targetType" required>
+                <option value="role">Role</option>
+                <option value="user">User</option>
+                <option value="all">All Roles</option>
+              </select>
+            </div>
+
+            <div class="field" id="roleField">
+              <label>Role</label>
+              <select class="input" name="roleId" id="roleId">
+                <option value="">-- Select Role --</option>
+                <% roles.forEach(function(r){ %>
+                  <option value="<%= r.id %>"><%= r.name %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="field hidden" id="userField">
+              <label>User</label>
+              <select class="input" name="userId" id="userId">
+                <option value="">-- Select User --</option>
+                <% users.forEach(function(u){ %>
+                  <option value="<%= u.id %>"><%= u.name || u.email %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Feature</label>
+              <select class="input" name="permissionId" id="permissionId" required>
+                <option value="">-- Select Feature --</option>
+                <% perms.forEach(function(p){ %>
+                  <option value="<%= p.id %>"><%= p.name %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Action</label>
+              <select class="input" name="action" required>
+                <option value="enable">Enable</option>
+                <option value="disable">Disable</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <button class="btn" type="submit">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- TAB 2: Current Role Grants -->
+    <div id="tab-grants" class="tab-content <%= (filters.tab === 'grants' ? 'active' : '') %>">
+      <div class="card">
+        <form method="GET" action="/admin/features" style="margin-bottom:12px">
+          <input type="hidden" name="tab" value="grants">
+          <div class="row">
+            <div class="field">
+              <label>Filter by Role</label>
+              <select class="input" name="roleId">
+                <option value="">-- Any Role --</option>
+                <% roles.forEach(function(r){ %>
+                  <option value="<%= r.id %>" <%= (String(filters.roleId) === String(r.id) ? 'selected' : '') %>><%= r.name %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Filter by Feature</label>
+              <select class="input" name="featureId">
+                <option value="">-- Any Feature --</option>
+                <% perms.forEach(function(p){ %>
+                  <option value="<%= p.id %>" <%= (String(filters.featureId) === String(p.id) ? 'selected' : '') %>><%= p.name %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Search (role / feature)</label>
+              <input class="input" type="text" name="q" placeholder="Type to search..." value="<%= filters.q %>">
+            </div>
+
+            <div class="field" style="display:flex;align-items:flex-end">
+              <button class="btn" type="submit">Apply Filters</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="field">
+          <label>Quick Name Filter (client-side)</label>
+          <input class="input" type="text" id="quickFilter" placeholder="Filter table by name…">
+        </div>
+
+        <table class="table" id="grantsTable">
+          <thead><tr><th>ID</th><th>Role</th><th>Feature</th><th></th></tr></thead>
+          <tbody>
+            <% if (!rolePerms.length) { %>
+              <tr><td colspan="4" class="subtle">No role grants match your filters.</td></tr>
+            <% } else { %>
+              <% rolePerms.forEach(function(rp){ %>
+                <tr>
+                  <td><%= rp.id %></td>
+                  <td class="col-role"><%= rp.role?.name %></td>
+                  <td class="col-feature"><%= rp.permission?.name %></td>
+                  <td>
+                    <form method="POST" action="/admin/features/revoke" style="display:inline">
+                      <input type="hidden" name="id" value="<%= rp.id %>">
+                      <button class="btn btn-outline btn-xs" type="submit">Revoke</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: User Permissions -->
+    <div id="tab-user" class="tab-content <%= (filters.tab === 'user' ? 'active' : '') %>">
+      <div class="card">
+        <form method="GET" action="/admin/features" style="margin-bottom:12px">
+          <input type="hidden" name="tab" value="user">
+          <div class="row">
+            <div class="field">
+              <label>Search by Email</label>
+              <input class="input" type="email" name="userEmail" list="emails" placeholder="user@example.com" value="<%= (userTab.selectedEmail || '') %>">
+              <datalist id="emails">
+                <% users.forEach(function(u){ %>
+                  <option value="<%= u.email %>"><%= u.name || u.email %></option>
+                <% }) %>
+              </datalist>
+            </div>
+            <div class="field" style="display:flex;align-items:flex-end">
+              <button class="btn" type="submit">Search</button>
+            </div>
+          </div>
+        </form>
+
+        <% if (!userTab.selectedEmail) { %>
+          <div class="subtle">Enter an email to view that user’s permissions.</div>
+        <% } else if (!userTab.selectedUser) { %>
+          <div class="card" style="border-left:4px solid #ef4444">No user found with "<%= userTab.selectedEmail %>".</div>
+        <% } else { %>
+          <div class="grid" style="grid-template-columns:1fr 1fr; gap:16px">
+            <div class="card">
+              <h3 style="margin:0 0 8px 0">User</h3>
+              <div><strong>Name:</strong> <%= userTab.selectedUser.name || '—' %></div>
+              <div><strong>Email:</strong> <%= userTab.selectedUser.email %></div>
+              <div><strong>Status:</strong> <%= userTab.selectedUser.status %></div>
+              <div><strong>Roles:</strong> <%= (userTab.rolesList && userTab.rolesList.length ? userTab.rolesList.join(', ') : '—') %></div>
+            </div>
+            <div class="card">
+              <h3 style="margin:0 0 8px 0">Effective Permissions</h3>
+              <% if (!userTab.effectivePerms.length) { %>
+                <div class="subtle">No permissions.</div>
+              <% } else { %>
+                <ul>
+                <% userTab.effectivePerms.forEach(function(p){ %>
+                  <li><%= p %></li>
+                <% }) %>
+                </ul>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="grid" style="grid-template-columns:1fr 1fr; gap:16px; margin-top:16px">
+            <div class="card">
+              <h3 style="margin:0 0 8px 0">From Roles</h3>
+              <% if (!userTab.rolePerms.length) { %><div class="subtle">—</div><% } else { %>
+                <ul>
+                  <% userTab.rolePerms.forEach(function(p){ %><li><%= p %></li><% }) %>
+                </ul>
+              <% } %>
+            </div>
+            <div class="card">
+              <h3 style="margin:0 0 8px 0">Direct User Overrides</h3>
+              <% if (!userTab.directPerms.length) { %><div class="subtle">—</div><% } else { %>
+                <ul>
+                  <% userTab.directPerms.forEach(function(p){ %><li><%= p %></li><% }) %>
+                </ul>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tabs
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabs = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const target = btn.dataset.tab;
+        tabButtons.forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        tabs.forEach(t=>t.classList.remove('active'));
+        document.getElementById('tab-' + target).classList.add('active');
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', target);
+        window.history.replaceState({}, '', url.toString());
+      });
+    });
+
+    // Toggle role/user fields
+    const targetType = document.getElementById('targetType');
+    const roleField  = document.getElementById('roleField');
+    const userField  = document.getElementById('userField');
+    function syncTarget(){
+      const v = targetType.value;
+      if (v === 'role'){
+        roleField.classList.remove('hidden');
+        userField.classList.add('hidden');
+      } else if (v === 'user'){
+        userField.classList.remove('hidden');
+        roleField.classList.add('hidden');
+      } else {
+        roleField.classList.add('hidden');
+        userField.classList.add('hidden');
+      }
+    }
+    if (targetType) {
+      targetType.addEventListener('change', syncTarget);
+      syncTarget();
+    }
+
+    // Quick filter for submission dropdowns
+    const quickFilterSubmission = document.getElementById('quickFilterSubmission');
+    const roleSelect    = document.getElementById('roleId');
+    const userSelect    = document.getElementById('userId');
+    const permSelect    = document.getElementById('permissionId');
+
+    function filterSelect(selectEl, query){
+      const q = (query || '').toLowerCase();
+      const options = Array.from(selectEl.options);
+      options.forEach((opt, idx)=>{
+        if (idx === 0) { opt.hidden = false; return; }
+        const txt = (opt.textContent || '').toLowerCase();
+        opt.hidden = q && !txt.includes(q);
+      });
+    }
+
+    function applySubmissionFilter(){
+      const q = quickFilterSubmission.value;
+      const tgt = targetType.value;
+      if (tgt === 'role'){
+        if (roleSelect) filterSelect(roleSelect, q);
+        if (permSelect) filterSelect(permSelect, q);
+      } else if (tgt === 'user'){
+        if (userSelect) filterSelect(userSelect, q);
+        if (permSelect) filterSelect(permSelect, q);
+      } else {
+        if (permSelect) filterSelect(permSelect, q);
+      }
+    }
+
+    if (quickFilterSubmission){
+      quickFilterSubmission.addEventListener('input', applySubmissionFilter);
+      if (targetType) targetType.addEventListener('change', ()=>{ quickFilterSubmission.value=''; applySubmissionFilter(); });
+      applySubmissionFilter();
+    }
+
+    // Client-side filter for grants table
+    const quickFilter = document.getElementById('quickFilter');
+    const table = document.getElementById('grantsTable');
+    if (quickFilter && table){
+      quickFilter.addEventListener('input', ()=>{
+        const q = quickFilter.value.toLowerCase();
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row=>{
+          const rn = (row.querySelector('.col-role')?.textContent || '').toLowerCase();
+          const fn = (row.querySelector('.col-feature')?.textContent || '').toLowerCase();
+          row.style.display = (rn.includes(q) || fn.includes(q)) ? '' : 'none';
+        });
+      });
+    }
+  </script>
+</body>
+</html>

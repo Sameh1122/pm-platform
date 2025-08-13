@@ -5,19 +5,15 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <%- include('partials/header') %>
-  <div class="container" style="max-width:520px;">
-    <div class="card">
-      <h1>Login</h1>
-      <form method="post" action="/login">
-        <div class="row"><input class="input" type="email" name="email" placeholder="Email" required></div>
-        <div class="row" style="margin-top:12px;"><input class="input" type="password" name="password" placeholder="Password" required></div>
-        <div class="row" style="margin-top:16px;">
-          <button class="btn" type="submit">Login</button>
-          <a class="btn btn-outline" href="/signup">Create Account</a>
-        </div>
-      </form>
-    </div>
+  <div class="container" style="max-width:600px">
+    <h1>Login</h1>
+    <% if (error) { %><div class="card" style="border-left:4px solid #ef4444"><%= error %></div><% } %>
+    <form method="POST" action="/login">
+      <div class="field"><label>Email</label><input class="input" type="email" name="email" required></div>
+      <div class="field"><label>Password</label><input class="input" type="password" name="password" required></div>
+      <button class="btn" type="submit">Login</button>
+      <a class="btn btn-outline" href="/signup" style="margin-left:8px">Sign up</a>
+    </form>
   </div>
 </body>
 </html>

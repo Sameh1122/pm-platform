@@ -1,61 +1,37 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Admin • Role × Feature</title>
-  <link rel="stylesheet" href="/styles.css">
-  <style>
-    .muted{color:var(--muted);font-size:13px}
-    table.perm{border-collapse:collapse;width:100%}
-    table.perm th, table.perm td{border:1px solid var(--border);padding:6px 8px;text-align:center}
-    table.perm th.sticky{position:sticky;top:0;background:var(--card)}
-    .left{text-align:left}
-    .wrap{max-width:1200px;margin-inline:auto}
-  </style>
+<head><title>Role × Feature</title><link rel="stylesheet" href="/styles.css">
+<style>table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:6px 8px;text-align:center}</style>
 </head>
 <body>
   <%- include('partials/header') %>
-  <%- include('partials/dashbar', { user }) %>
-
-  <div class="container wrap">
-    <div class="header">
-      <h1>Role × Feature</h1>
-      <p class="muted">Turn features (permissions) on/off for each role.</p>
-      <div>
-        <a class="btn" href="/admin/assignable">Manager × Target Role</a>
-      </div>
-    </div>
-
-    <div class="card" style="overflow:auto;">
-      <table class="perm">
-        <thead>
+  <div class="container">
+    <h1>Role × Feature</h1>
+    <p><a class="btn" href="/admin/assignable">Manager × Target</a></p>
+    <table>
+      <thead><tr><th>Role \\ Feature</th>
+        <% perms.forEach(function(p){ %><th><%= p.name %></th><% }) %>
+      </tr></thead>
+      <tbody>
+        <% roles.forEach(function(r){ %>
           <tr>
-            <th class="left sticky">Role \ Feature</th>
-            <% perms.forEach(function(p){ %>
-              <th class="sticky"><%= p.name %></th>
+            <td><strong><%= r.name %></strong></td>
+            <% perms.forEach(function(p){
+              var has = (rolePermsMap.get(r.id) || new Set()).has(p.id);
+            %>
+              <td>
+                <form method="POST" action="/admin/features/toggle">
+                  <input type="hidden" name="roleId" value="<%= r.id %>">
+                  <input type="hidden" name="permissionId" value="<%= p.id %>">
+                  <input type="hidden" name="enabled" value="<%= has ? 0 : 1 %>">
+                  <button class="btn btn-xs <%= has?'':'btn-outline' %>" type="submit"><%= has?'On':'Off' %></button>
+                </form>
+              </td>
             <% }) %>
           </tr>
-        </thead>
-        <tbody>
-          <% roles.forEach(function(r){ %>
-            <tr>
-              <td class="left"><strong><%= r.name %></strong></td>
-              <% perms.forEach(function(p){
-                   var has = (rolePermsMap.get(r.id) || new Set()).has(p.id);
-              %>
-                <td>
-                  <form method="POST" action="/admin/features/toggle">
-                    <input type="hidden" name="roleId" value="<%= r.id %>">
-                    <input type="hidden" name="permissionId" value="<%= p.id %>">
-                    <input type="hidden" name="enabled" value="<%= has ? 0 : 1 %>">
-                    <button class="btn btn-xs <%= has?'':'btn-outline' %>" type="submit"><%= has?'On':'Off' %></button>
-                  </form>
-                </td>
-              <% }) %>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
+        <% }) %>
+      </tbody>
+    </table>
   </div>
 </body>
 </html>

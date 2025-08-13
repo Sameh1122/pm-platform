@@ -1,53 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Manage Roles</title>
+  <title>Roles Management</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .muted{color:#94a3b8;font-size:13px}
+    .grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
   <%- include('partials/header') %>
 
   <div class="container">
-    <div class="header">
-      <h1>Manage Roles</h1>
-      <a class="btn btn-outline" href="/admin">Back to Admin</a>
-    </div>
+    <h1 style="margin:0 0 8px 0">Roles</h1>
+    <p class="muted">Create and manage system roles.</p>
 
-    <div class="card">
-      <form method="POST" action="/roles/add" class="row">
-        <input class="input" type="text" name="name" placeholder="Role name" required style="max-width:260px;">
-        <button class="btn" type="submit">Add Role</button>
-      </form>
-    </div>
-
-    <div class="card" style="margin-top:12px;">
-      <% if (!roles || roles.length === 0) { %>
-        <p>No roles yet.</p>
-      <% } else { %>
+    <div class="grid">
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">All Roles</h3>
         <table class="table">
-          <thead><tr><th>ID</th><th>Name</th><th>Actions</th></tr></thead>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th># Users</th>
+              <th>Permissions</th>
+              <th style="width:120px">Actions</th>
+            </tr>
+          </thead>
           <tbody>
-            <% roles.forEach(r => { %>
-              <tr>
-                <td><%= r.id %></td>
-                <td>
-                  <form method="POST" action="/roles/edit" class="row">
-                    <input type="hidden" name="id" value="<%= r.id %>">
-                    <input class="input" type="text" name="name" value="<%= r.name %>" required style="max-width:240px;">
-                    <button class="btn btn-xs" type="submit">Update</button>
-                  </form>
-                </td>
-                <td>
-                  <form method="POST" action="/roles/delete" onsubmit="return confirm('Delete this role?')" class="row">
-                    <input type="hidden" name="id" value="<%= r.id %>">
-                    <button class="btn btn-danger btn-xs" type="submit">Delete</button>
-                  </form>
-                </td>
-              </tr>
-            <% }) %>
+            <% if (!roles.length) { %>
+              <tr><td colspan="5" class="muted">No roles yet.</td></tr>
+            <% } else { %>
+              <% roles.forEach(function(r){ %>
+                <tr>
+                  <td><%= r.id %></td>
+                  <td><%= r.name %></td>
+                  <td><%= r.users.length %></td>
+                  <td class="muted">
+                    <% if (!r.permissions.length) { %>
+                      —
+                    <% } else { %>
+                      <%= r.permissions.map(x => x.permission?.name).filter(Boolean).join(', ') %>
+                    <% } %>
+                  </td>
+                  <td>
+                    <form method="POST" action="/roles/<%= r.id %>/delete" onsubmit="return confirm('Delete this role?');">
+                      <button class="btn btn-outline" type="submit" <%= r.users.length ? 'disabled' : '' %>>Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
           </tbody>
         </table>
-      <% } %>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Create Role</h3>
+        <form method="POST" action="/roles" style="display:flex;gap:8px;align-items:center">
+          <input class="input" type="text" name="name" placeholder="Role name (e.g., PM, Business Analyst)" required>
+          <button class="btn" type="submit">Add</button>
+        </form>
+        <p class="muted" style="margin-top:8px">After creating a role, go to <a href="/admin/features">Role × Feature</a> to grant features.</p>
+      </div>
     </div>
   </div>
 </body>

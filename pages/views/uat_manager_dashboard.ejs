@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>UAT Manager · Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .muted{color:#94a3b8;font-size:13px}
+    .owner{font-size:13px;color:#cbd5e1}
+    .select-inline{min-width:240px}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <div class="container">
+    <h1 style="margin:0 0 8px 0">UAT Manager</h1>
+    <div class="muted">Assign or change the UAT per project.</div>
+
+    <% if (!uatRole) { %>
+      <div class="card" style="margin-top:12px;border-left:4px solid #ef4444">
+        Role "UAT" not found. Please create it first.
+      </div>
+    <% } %>
+
+    <div class="card" style="margin-top:12px">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Project</th>
+            <th>Owner</th>
+            <th>Current UAT</th>
+            <th>Assign / Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!projects.length) { %>
+            <tr><td colspan="5" class="muted">No projects yet.</td></tr>
+          <% } else { %>
+            <% projects.forEach(function(p){
+                let currentUAT = null;
+                if (p.assignments && p.assignments.length && uatRole) {
+                  const hit = p.assignments.find(a => a.roleId === uatRole.id);
+                  if (hit) currentUAT = hit.user;
+                }
+            %>
+              <tr>
+                <td><%= p.id %></td>
+                <td><%= p.name %> <span class="muted">(<%= p.methodology %>)</span></td>
+                <td class="owner"><%= p.owner?.name || p.owner?.email || '—' %></td>
+                <td><%= currentUAT ? (currentUAT.name || currentUAT.email) : '—' %></td>
+                <td>
+                  <form method="POST" action="/manager/assign-uat" style="display:flex; gap:8px; align-items:center">
+                    <input type="hidden" name="projectId" value="<%= p.id %>">
+                    <select class="input select-inline" name="userId" <%= !uatRole ? 'disabled' : '' %>>
+                      <option value="">-- Unassign UAT --</option>
+                      <% uatUsers.forEach(function(u){ %>
+                        <option value="<%= u.id %>" <%= (currentUAT && currentUAT.id === u.id ? 'selected' : '') %>>
+                          <%= u.name || u.email %>
+                        </option>
+                      <% }) %>
+                    </select>
+                    <button class="btn" type="submit" <%= !uatRole ? 'disabled' : '' %>>Save</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

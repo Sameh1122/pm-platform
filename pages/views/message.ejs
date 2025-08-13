@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title><%= title %></title>
+  <title><%= title || 'Message' %></title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <%- include('partials/header') %>
-  <div class="container" style="max-width:620px;">
+  <div class="container" style="max-width:680px">
     <div class="card">
-      <h1 style="margin-top:0"><%= title %></h1>
-      <p><%= text %></p>
-      <a class="btn" href="<%= ctaHref %>"><%= ctaText %></a>
+      <h2 style="margin:0 0 8px 0"><%= title || 'Message' %></h2>
+      <p><%= body || '' %></p>
+      <% if (backHref) { %>
+        <p><a class="btn" href="<%= backHref %>"><%= backText || 'Back' %></a></p>
+      <% } %>
     </div>
   </div>
 </body>

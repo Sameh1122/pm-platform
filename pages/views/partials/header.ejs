@@ -1,32 +1,45 @@
-<link rel="stylesheet" href="/styles.css">
-<style>
-  .navbar { position: sticky; top:0; z-index:50; background:var(--panel); border-bottom:1px solid var(--border); box-shadow:0 6px 16px rgba(0,0,0,.25); }
-  .navwrap { max-width:1100px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; }
-  .navleft, .navright { display:flex; align-items:center; gap:10px; }
-  .brand { font-weight:700; letter-spacing:.2px; }
-  .navlink { text-decoration:none; color:var(--text); padding:8px 12px; border-radius:10px; border:1px solid transparent; }
-  .navlink:hover { background:rgba(255,255,255,.04); border-color:var(--border); }
-  .navlink.active { background:var(--primary); border-color:var(--primary); color:#fff; }
-  .avatar { font-size:12px; color:var(--muted); }
-</style>
+<%
+  const u = (typeof currentUser !== 'undefined' && currentUser) ? currentUser : null;
+  const _path = (typeof path !== 'undefined' && path) ? path : '/';
 
-<div class="navbar">
-  <div class="navwrap">
-    <div class="navleft">
-      <span class="brand">PM Platform</span>
-      <a class="navlink <%= (path === '/' ? 'active' : '') %>" href="/">Home</a>
-      <% if (currentUser) { %>
-        <a class="navlink <%= (path && path.startsWith('/dashboard') ? 'active' : '') %>" href="/dashboard">Dashboard</a>
-      <% } %>
+  // اجمع صلاحيات الأدوار (لروابط الأدمن فقط)
+  const allPerms = new Set();
+  (u?.userRoles || []).forEach(ur =>
+    (ur.role?.permissions || []).forEach(rp => rp.permission?.name && allPerms.add(rp.permission.name))
+  );
+  const isAdminLike = allPerms.has('create_role') || allPerms.has('admin_panel');
+
+  const displayName = u ? (u.name || u.email) : '';
+%>
+
+<header class="shell">
+  <div class="navbar" style="display:flex;align-items:center;gap:12px;justify-content:space-between">
+    <!-- Left: brand + main nav -->
+    <div style="display:flex;align-items:center;gap:16px">
+      <div class="brand">
+        <a href="/">PM Platform</a>
+        <span class="badge">beta</span>
+      </div>
+      <nav class="nav" style="display:flex;gap:10px">
+        <a class="<%= (_path==='/')?'active':'' %>" href="/">Home</a>
+        <% if (u) { %>
+          <a class="<%= (_path.startsWith('/dashboard'))?'active':'' %>" href="/dashboard">Dashboard</a>
+          <% if (isAdminLike) { %>
+            <a class="<%= (_path.startsWith('/admin/features'))?'active':'' %>" href="/admin/features">Features</a>
+            <a class="<%= (_path.startsWith('/assignable'))?'active':'' %>" href="/assignable">Assignable</a>
+          <% } %>
+        <% } else { %>
+          <a class="<%= (_path==='/login')?'active':'' %>" href="/login">Login</a>
+        <% } %>
+      </nav>
     </div>
-    <div class="navright">
-      <% if (!currentUser) { %>
-        <a class="navlink" href="/login">Login</a>
-        <a class="navlink" href="/signup">Sign Up</a>
-      <% } else { %>
-        <span class="avatar"><%= currentUser.name || currentUser.email %></span>
-        <a class="navlink" href="/logout">Logout</a>
+
+    <!-- Right: user name + logout -->
+    <div style="display:flex;align-items:center;gap:12px">
+      <% if (u) { %>
+        <span style="color:#e2e8f0;font-size:14px;opacity:.9">Hello, <strong><%= displayName %></strong></span>
+        <a class="btn btn-xs btn-outline" href="/logout">Logout</a>
       <% } %>
     </div>
   </div>
-</div>
+</header>
