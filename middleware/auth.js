@@ -1,31 +1,50 @@
+// routes/auth.js
+const express = require('express');
+const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
+
 const prisma = new PrismaClient();
+const router = express.Router();
 
-async function setCurrentUser(req, res, next) {
+router.get('/signup', (req, res) => res.render('signup', { msg: null, error: null }));
+
+router.post('/signup', async (req, res) => {
+  const { email, password, name } = req.body;
   try {
-    const uid = req.cookies.userId;
-    if (!uid) { req.user=null; res.locals.currentUser=null; return next(); }
-    const user = await prisma.user.findUnique({
-      where: { id: Number(uid) },
-      include: { userRoles: { include: { role: true } } }
+    const exists = await prisma.user.findUnique({ where: { email } });
+    if (exists) {
+      return res.render('signup', { msg: null, error: 'This email is already registered.' });
+    }
+    const hashed = await bcrypt.hash(password, 10);
+    await prisma.user.create({
+      data: { email, password: hashed, name, status: 'pending' }
     });
-    req.user = user || null;
-    res.locals.currentUser = req.user;
-  } catch {
-    req.user = null; res.locals.currentUser = null;
+    return res.render('message', { title: 'Signup', body: 'Registered. Your request is pending admin approval.' });
+  } catch (e) {
+    return res.status(400).send('Error: ' + e.message);
   }
-  next();
-}
+});
 
-async function requireAuth(req, res, next) {
-  if (!req.user) return res.redirect('/login');
-  next();
-}
+router.get('/login', (req, res) => res.render('login', { error: null }));
 
-async function requireApproved(req, res, next) {
-  if (!req.user) return res.redirect('/login');
-  if (req.user.status !== 'approved') return res.status(403).send('Your account is not approved.');
-  next();
-}
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const u = await prisma.user.findUnique({
+    where: { email },
+    include: { userRoles: { include: { role: { include: { permissions: { include: { permission: true } } } } } } }
+  });
+  if (!u) return res.render('login', { error: 'Invalid credentials.' });
+  const ok = await bcrypt.compare(password, u.password);
+  if (!ok) return res.render('login', { error: 'Invalid credentials.' });
 
-module.exports = { setCurrentUser, requireAuth, requireApproved };
+  // اكتب الكوكي وبعدين حول
+  res.cookie('userId', String(u.id), { httpOnly: true, sameSite: 'lax' });
+  return res.redirect('/dashboard'); // هنوجّه ذكي من هناك
+});
+
+router.get('/logout', (req, res) => {
+  res.clearCookie('userId');
+  res.redirect('/');
+});
+
+module.exports = router;

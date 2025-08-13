@@ -56,6 +56,7 @@ const devManagerRoutes = require('./routes/dev_manager');
 const uatManagerRoutes = require('./routes/uat_manager');
 const qcManagerRoutes = require('./routes/qc_manager');
 const adminFeaturesRoutes = require('./routes/admin_features');
+const debugRoutes = require('./routes/debug');
 
 // ===== mount routes (اتجنب التكرار) =====
 app.use('/', authRoutes);
@@ -67,6 +68,8 @@ app.use('/', saManagerRoutes);
 app.use('/', adminFeaturesRoutes);
 app.use('/', adminRoutes);
 app.use('/', dashboardRoutes);
+app.use('/', debugRoutes);
+
 
 // ===== Home =====
 app.get('/', async (req, res) => {
