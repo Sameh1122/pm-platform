@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pre-Initiation — <%= project.name %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .muted{color:var(--muted);font-size:13px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .chip{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:4px 10px;font-size:12px}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container">
+    <div class="header">
+      <h1>Pre-Initiation • <%= project.name %></h1>
+      <div class="row">
+        <% if (canAssignTeam) { %>
+          <a class="btn" href="/projects/<%= project.id %>/assign">Assign Team</a>
+        <% } %>
+        <% if (canManageTemplates) { %>
+          <a class="btn" href="/projects/<%= project.id %>/templates">Manage Templates</a>
+        <% } %>
+        <% if (canAddDocument) { %>
+          <a class="btn" href="/projects/<%= project.id %>/documents/add">Add Document</a>
+        <% } %>
+        <a class="btn btn-outline" href="/dashboard">Back</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <% if (!documents || documents.length===0) { %>
+        <p class="muted">No documents yet.</p>
+        <% if (canAddDocument) { %><p class="muted">Click "Add Document" to add your first document.</p><% } %>
+      <% } else { %>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Owner</th>
+              <th>Status</th>
+              <th>Template</th>
+              <th>Files</th>
+              <th style="width:220px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% documents.forEach(function(d){ %>
+              <tr>
+                <td><strong><%= d.type %></strong></td>
+                <td><%= (d.owner && (d.owner.name || d.owner.email)) || '-' %></td>
+                <td><span class="status <%= d.status %>"><%= d.status %></span></td>
+                <td><%= (d.template && d.template.name) || '-' %></td>
+                <td><a class="btn btn-xs" href="/documents/<%= d.id %>">Open</a></td>
+                <td><a class="btn btn-xs" href="/documents/<%= d.id %>">View</a></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+
+    <% if (allowedTemplates && allowedTemplates.length>0) { %>
+      <div class="card">
+        <h3 style="margin-top:0;">Allowed Templates in Project</h3>
+        <div class="row">
+          <% allowedTemplates.forEach(function(a){ %>
+            <span class="chip"><%= a.template.name %></span>
+          <% }); %>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .muted{color:var(--muted);font-size:13px}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .table td, .table th { vertical-align: middle; }
+    form.inline{display:inline}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container">
+    <div class="header">
+      <h1>My Dashboard</h1>
+    </div>
+
+    <% if (!projects || projects.length === 0) { %>
+      <div class="card">
+        <p class="muted">No projects assigned yet.</p>
+        <p class="muted">Tip: اطلب من الـ PM يعملك Assign، أو أنشئ مشروع جديد لو أنت الـ Owner.</p>
+      </div>
+    <% } else { %>
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:40%;">Project</th>
+              <th style="width:30%;">Project Manager</th>
+              <th style="width:15%;">Methodology</th>
+              <th style="width:15%;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% 
+              var isAdmin = Array.isArray(user?.userRoles) && user.userRoles.some(function(ur){ return (ur.role.name||'').toLowerCase()==='admin'; });
+              projects.forEach(function(p){ 
+            %>
+              <tr>
+                <td><strong><%= p.name %></strong></td>
+                <td><%= (p.owner && (p.owner.name || p.owner.email)) || '-' %></td>
+                <td><%= p.methodology %></td>
+                <td>
+                  <div class="row">
+                    <a class="btn btn-xs" href="/projects/<%= p.id %>/preinit">Open</a>
+                    <% if (isAdmin) { %>
+                      <form class="inline" method="POST" action="/projects/<%= p.id %>/delete" onsubmit="return confirm('Delete this entire project? This cannot be undone.')">
+                        <button class="btn btn-danger btn-xs" type="submit">Delete</button>
+                      </form>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</body>
+</html>

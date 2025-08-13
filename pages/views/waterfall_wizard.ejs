@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Waterfall Wizard - <%= project.name %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+    .tab{padding:8px 12px; border:1px solid var(--border); border-radius:999px; background:var(--card); cursor:pointer; font-size:13px}
+    .tab.active{background:var(--primary); color:#fff; border-color:var(--primary)}
+    .panel{display:none}
+    .panel.active{display:block}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container">
+    <div class="card">
+      <div class="header"><h1>Waterfall • <%= project.name %></h1></div>
+      <div class="tabs" id="tabs">
+        <a class="btn btn-outline" href="/projects/<%= project.id %>/preinit">Pre-Initiation (Docs)</a>
+        <button class="tab active" data-panel="pre">Pre-Initiation</button>
+        <button class="tab" data-panel="analysis">Analysis</button>
+        <button class="tab" data-panel="arch">Architecture Design</button>
+        <button class="tab" data-panel="dev">Development</button>
+        <button class="tab" data-panel="qc">Quality Control</button>
+        <button class="tab" data-panel="uat">UAT</button>
+        <button class="tab" data-panel="delivery">Delivery</button>
+      </div>
+
+      <div class="panel active" id="panel-pre"><h3>Pre-Initiation</h3><p>Vision, Stakeholders, High-level Scope …</p></div>
+      <div class="panel" id="panel-analysis"><h3>Analysis</h3><p>BRD/SRS placeholders…</p></div>
+      <div class="panel" id="panel-arch"><h3>Architecture Design</h3><p>Solution outline…</p></div>
+      <div class="panel" id="panel-dev"><h3>Development</h3><p>Modules, tasks…</p></div>
+      <div class="panel" id="panel-qc"><h3>Quality Control</h3><p>Test plan, test cases…</p></div>
+      <div class="panel" id="panel-uat"><h3>UAT</h3><p>Scenarios, sign-offs…</p></div>
+      <div class="panel" id="panel-delivery"><h3>Delivery</h3><p>Handover checklist…</p></div>
+    </div>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    const panels = {
+      pre: document.getElementById('panel-pre'),
+      analysis: document.getElementById('panel-analysis'),
+      arch: document.getElementById('panel-arch'),
+      dev: document.getElementById('panel-dev'),
+      qc: document.getElementById('panel-qc'),
+      uat: document.getElementById('panel-uat'),
+      delivery: document.getElementById('panel-delivery'),
+    };
+    tabs.forEach(t=>{
+      t.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+        t.classList.add('active');
+        panels[t.dataset.panel].classList.add('active');
+      })
+    })
+  </script>
+</body>
+</html>

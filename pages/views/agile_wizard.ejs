@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Agile Wizard - <%= project.name %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+    .tab{padding:8px 12px; border:1px solid var(--border); border-radius:999px; background:var(--card); cursor:pointer; font-size:13px}
+    .tab.active{background:var(--primary); color:#fff; border-color:var(--primary)}
+    .panel{display:none}
+    .panel.active{display:block}
+    .kanban{display:grid; grid-template-columns: repeat(8, minmax(200px, 1fr)); gap:12px; overflow-x:auto}
+    .col{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px; min-height:220px}
+    .col h4{margin:0 0 8px 0}
+    .card{background:var(--card); border:1px solid var(--border); border-radius:8px; padding:8px; margin-bottom:8px}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container">
+    <div class="card">
+      <div class="header"><h1>Agile • <%= project.name %></h1></div>
+      <div class="tabs" id="tabs">
+        <a class="btn btn-outline" href="/projects/<%= project.id %>/preinit">Pre-Initiation (Docs)</a>
+        <button class="tab active" data-panel="pre">Pre-Initiation</button>
+        <button class="tab" data-panel="analysis">Analysis</button>
+        <button class="tab" data-panel="arch">Architecture Design</button>
+        <button class="tab" data-panel="backlog">Backlog (Kanban)</button>
+      </div>
+
+      <div class="panel active" id="panel-pre"><h3>Pre-Initiation</h3><p>Vision, stakeholders, success criteria…</p></div>
+      <div class="panel" id="panel-analysis"><h3>Analysis</h3><p>Epics, acceptance criteria…</p></div>
+      <div class="panel" id="panel-arch"><h3>Architecture Design</h3><p>Services & integrations…</p></div>
+      <div class="panel" id="panel-backlog">
+        <h3>Backlog (Kanban)</h3>
+        <div class="kanban">
+          <div class="col"><h4>Pre-DOR</h4><div class="card">Story sample</div></div>
+          <div class="col"><h4>DOR</h4></div>
+          <div class="col"><h4>TO DO</h4></div>
+          <div class="col"><h4>In Progress</h4></div>
+          <div class="col"><h4>Testing</h4></div>
+          <div class="col"><h4>Ready for Acceptance</h4></div>
+          <div class="col"><h4>Accepted</h4></div>
+          <div class="col"><h4>DOD</h4></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    const panels = {
+      pre: document.getElementById('panel-pre'),
+      analysis: document.getElementById('panel-analysis'),
+      arch: document.getElementById('panel-arch'),
+      backlog: document.getElementById('panel-backlog'),
+    };
+    tabs.forEach(t=>{
+      t.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+        t.classList.add('active');
+        panels[t.dataset.panel].classList.add('active');
+      })
+    })
+  </script>
+</body>
+</html>

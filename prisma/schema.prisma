@@ -1,0 +1,182 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               Int                     @id @default(autoincrement())
+  email            String                  @unique
+  password         String
+  name             String?
+  status           String                  @default("pending") // pending | approved | rejected | suspended
+  createdAt        DateTime                @default(now())
+
+  userRoles        UserRole[]
+  projects         Project[]               @relation("UserProjects")
+  assignments      Assignment[]
+  documents        ProjectDocument[]       @relation("DocOwner")
+  uploads          ProjectDocumentFile[]   @relation("Uploader")
+  createdTemplates DocumentTemplate[]      @relation("TemplateCreator")
+}
+
+model Role {
+  id              Int               @id @default(autoincrement())
+  name            String            @unique
+  permissions     RolePermission[]
+  users           UserRole[]
+  assignments     Assignment[]
+  approvalSteps   ApprovalStep[]
+  approvalOwners  ApprovalOwner[]
+  // NEW: managers-to-targets mapping
+  canAssign       RoleAssignable[]       @relation("ManagerToTarget")
+  canBeAssignedBy RoleAssignable[]       @relation("TargetOfManager")
+}
+
+model Permission {
+  id          Int             @id @default(autoincrement())
+  name        String          @unique
+  description String?
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  id           Int         @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+  role         Role        @relation(fields: [roleId], references: [id])
+  permission   Permission  @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId], name: "roleId_permissionId")
+}
+
+model UserRole {
+  id     Int   @id @default(autoincrement())
+  userId Int
+  roleId Int
+  user   User  @relation(fields: [userId], references: [id])
+  role   Role  @relation(fields: [roleId], references: [id])
+}
+
+model Project {
+  id             Int                     @id @default(autoincrement())
+  name           String
+  methodology    String                  // "waterfall" | "agile"
+  ownerId        Int
+  owner          User                    @relation("UserProjects", fields: [ownerId], references: [id])
+  createdAt      DateTime                @default(now())
+
+  assignments    Assignment[]
+  documents      ProjectDocument[]
+  allowedTemps   ProjectAllowedTemplate[]
+}
+
+model Assignment {
+  id        Int     @id @default(autoincrement())
+  projectId Int
+  userId    Int
+  roleId    Int
+
+  project   Project @relation(fields: [projectId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+  role      Role    @relation(fields: [roleId], references: [id])
+
+  @@unique([projectId, userId, roleId])
+}
+
+model DocumentTemplate {
+  id            Int                    @id @default(autoincrement())
+  name          String                 @unique
+  createdBy     Int
+  createdAt     DateTime               @default(now())
+
+  createdByUser User                   @relation("TemplateCreator", fields: [createdBy], references: [id])
+  usedDocs      ProjectDocument[]
+  allowedIn     ProjectAllowedTemplate[]
+}
+
+model ProjectAllowedTemplate {
+  id         Int     @id @default(autoincrement())
+  projectId  Int
+  templateId Int
+
+  project    Project          @relation(fields: [projectId], references: [id])
+  template   DocumentTemplate @relation(fields: [templateId], references: [id])
+
+  @@unique([projectId, templateId])
+}
+
+model ProjectDocument {
+  id          Int        @id @default(autoincrement())
+  projectId   Int
+  templateId  Int?
+  type        String     // denormalized from template.name
+  content     String?
+  ownerId     Int?
+  status      String     @default("draft") // draft | pending | approved | rejected
+  createdAt   DateTime   @default(now())
+
+  project     Project    @relation(fields: [projectId], references: [id])
+  template    DocumentTemplate? @relation(fields: [templateId], references: [id])
+  owner       User?      @relation("DocOwner", fields: [ownerId], references: [id])
+  approvals   ApprovalStep[]
+  approvers   ApprovalOwner[]
+  files       ProjectDocumentFile[]
+}
+
+model ProjectDocumentFile {
+  id            Int        @id @default(autoincrement())
+  documentId    Int
+  path          String
+  originalName  String
+  mime          String
+  size          Int
+  uploadedById  Int
+  uploadedAt    DateTime   @default(now())
+
+  document      ProjectDocument @relation(fields: [documentId], references: [id])
+  uploadedBy    User            @relation("Uploader", fields: [uploadedById], references: [id])
+}
+
+model ApprovalStep {
+  id          Int       @id @default(autoincrement())
+  documentId  Int
+  order       Int
+  roleId      Int
+  status      String    @default("pending") // pending | approved | rejected
+  approvedBy  Int?
+  approvedAt  DateTime?
+
+  document    ProjectDocument @relation(fields: [documentId], references: [id])
+  role        Role            @relation(fields: [roleId], references: [id])
+}
+
+model ApprovalOwner {
+  id          Int       @id @default(autoincrement())
+  documentId  Int
+  roleId      Int
+  status      String    @default("pending") // pending | approved | rejected
+  approvedBy  Int?
+  approvedAt  DateTime?
+
+  document    ProjectDocument @relation(fields: [documentId], references: [id])
+  role        Role            @relation(fields: [roleId], references: [id])
+}
+
+/**
+ * NEW: Matrix بتحدد أي "Manager role" مسموح له يعيّن أي "Target role"
+ * مثال: (Business Analyst Manager) -> (Business Analyst)
+ */
+model RoleAssignable {
+  id             Int  @id @default(autoincrement())
+  managerRoleId  Int
+  targetRoleId   Int
+
+  managerRole    Role @relation("ManagerToTarget", fields: [managerRoleId], references: [id])
+  targetRole     Role @relation("TargetOfManager", fields: [targetRoleId], references: [id])
+
+  @@unique([managerRoleId, targetRoleId], name: "manager_target_unique")
+}

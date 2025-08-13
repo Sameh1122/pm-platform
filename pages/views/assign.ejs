@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Assign Team — <%= project.name %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .muted{color:var(--muted);font-size:13px}
+    .table td,.table th{vertical-align:middle}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container" style="max-width:900px;">
+    <div class="header">
+      <h1>Assign Team • <%= project.name %></h1>
+      <div class="row">
+        <a class="btn btn-outline" href="/projects/<%= project.id %>/preinit">Back to Pre-Initiation</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Add Member</h3>
+      <form method="POST" action="/projects/<%= project.id %>/assign" class="row">
+        <select class="input" name="userId" required>
+          <option value="">-- Select User --</option>
+          <% users.forEach(function(u){ %>
+            <option value="<%= u.id %>"><%= (u.name || u.email) %></option>
+          <% }) %>
+        </select>
+
+        <select class="input" name="roleId" required>
+          <option value="">-- Select Role --</option>
+          <% roles.forEach(function(r){ %>
+            <option value="<%= r.id %>"><%= r.name %></option>
+          <% }) %>
+        </select>
+
+        <button class="btn" type="submit">Assign</button>
+      </form>
+      <p class="muted">Tip: نفس المستخدم ممكن يكون له أكتر من Role في نفس المشروع.</p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Current Team</h3>
+      <% if (!assignments || assignments.length===0) { %>
+        <p class="muted">No members assigned yet.</p>
+      <% } else { %>
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:40%;">User</th>
+              <th style="width:40%;">Role</th>
+              <th style="width:20%;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% assignments.forEach(function(a){ %>
+              <tr>
+                <td><%= (a.user && (a.user.name || a.user.email)) || '-' %></td>
+                <td><%= (a.role && a.role.name) || '-' %></td>
+                <td>
+                  <form method="POST" action="/projects/<%= project.id %>/assign/remove" onsubmit="return confirm('Remove this member from project?')">
+                    <input type="hidden" name="assignId" value="<%= a.id %>">
+                    <button class="btn btn-danger btn-xs" type="submit">Remove</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

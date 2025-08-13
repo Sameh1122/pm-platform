@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Welcome</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+  <div class="container" style="max-width:800px;">
+    <div class="card">
+      <h1>Welcome <%= user.name || user.email %></h1>
+      <p><strong>Email:</strong> <%= user.email %></p>
+      <p><strong>Status:</strong> <span class="status <%= user.status %>"><%= user.status %></span></p>
+      <p><strong>Roles:</strong></p>
+      <div class="row">
+        <% if (!user.userRoles || user.userRoles.length === 0) { %>
+          <span class="badge">No roles</span>
+        <% } else { %>
+          <% user.userRoles.forEach(ur => { %>
+            <span class="badge"><%= ur.role.name %></span>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

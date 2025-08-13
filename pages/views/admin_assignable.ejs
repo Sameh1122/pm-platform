@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin • Manager × Target Role</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .muted{color:var(--muted);font-size:13px}
+    table.mx{border-collapse:collapse;width:100%}
+    table.mx th, table.mx td{border:1px solid var(--border);padding:6px 8px;text-align:center}
+    table.mx th.sticky{position:sticky;top:0;background:var(--card)}
+    .left{text-align:left}
+    .wrap{max-width:1200px;margin-inline:auto}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container wrap">
+    <div class="header">
+      <h1>Manager × Target Role</h1>
+      <p class="muted">Which manager roles may assign which target roles?</p>
+      <div>
+        <a class="btn" href="/admin/features">Role × Feature</a>
+      </div>
+    </div>
+
+    <div class="card" style="overflow:auto;">
+      <% if (!managerRoles || managerRoles.length===0) { %>
+        <p class="muted">No manager roles have <code>assign_members</code>.</p>
+      <% } else { %>
+        <table class="mx">
+          <thead>
+            <tr>
+              <th class="left sticky">Manager \ Target</th>
+              <% targetRoles.forEach(function(t){ %>
+                <th class="sticky"><%= t.name %></th>
+              <% }) %>
+            </tr>
+          </thead>
+          <tbody>
+            <% managerRoles.forEach(function(m){ %>
+              <tr>
+                <td class="left"><strong><%= m.name %></strong></td>
+                <% targetRoles.forEach(function(t){
+                     var allowed = (matrix.get(m.id) || new Set()).has(t.id);
+                %>
+                  <td>
+                    <form method="POST" action="/admin/assignable/toggle">
+                      <input type="hidden" name="managerRoleId" value="<%= m.id %>">
+                      <input type="hidden" name="targetRoleId"  value="<%= t.id %>">
+                      <input type="hidden" name="enabled" value="<%= allowed ? 0 : 1 %>">
+                      <button class="btn btn-xs <%= allowed?'':'btn-outline' %>" type="submit"><%= allowed?'On':'Off' %></button>
+                    </form>
+                  </td>
+                <% }) %>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

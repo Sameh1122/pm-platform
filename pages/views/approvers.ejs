@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Approval Owners — <%= doc.type %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .muted{color:var(--muted); font-size:13px}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container" style="max-width:900px;">
+    <div class="header">
+      <h1 style="margin:0">Approval Owners (Parallel) — <%= doc.type %></h1>
+      <a class="btn btn-outline" href="/documents/<%= doc.id %>">Back</a>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Current Owners</h3>
+      <% if (!owners || owners.length === 0) { %>
+        <p class="muted">No approvers yet.</p>
+      <% } else { %>
+        <table class="table">
+          <thead><tr><th>Role</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <% owners.forEach(function(o){ %>
+              <tr>
+                <td><%= o.role.name %></td>
+                <td><span class="status <%= o.status %>"><%= o.status %></span></td>
+                <td>
+                  <form method="POST" action="/documents/<%= doc.id %>/approvers/remove" onsubmit="return confirm('Remove this approver?')" class="row">
+                    <input type="hidden" name="id" value="<%= o.id %>">
+                    <button class="btn btn-danger btn-xs" type="submit">Remove</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0">Add Approver</h3>
+      <form method="POST" action="/documents/<%= doc.id %>/approvers/add" class="row">
+        <select class="input" name="roleId" required>
+          <option value="">-- Select Role --</option>
+          <% roles.forEach(function(r){ %>
+            <option value="<%= r.id %>"><%= r.name %></option>
+          <% }); %>
+        </select>
+        <button class="btn" type="submit">Add</button>
+      </form>
+      <p class="muted" style="margin-top:8px;">* كل الـ Approvers مستقلين (Parallel). هنضيف إجراءات الموافقة/الرفض عقب ما نثبّت الأساس.</p>
+    </div>
+  </div>
+</body>
+</html>

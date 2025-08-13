@@ -1,0 +1,26 @@
+<%
+function hasRole(u, name){
+  if (!u || !u.userRoles) return false;
+  name = (name||'').toLowerCase();
+  return u.userRoles.some(function(ur){ return (ur.role.name||'').toLowerCase() === name; });
+}
+%>
+<div class="subnav">
+  <div class="container row" style="justify-content:space-between; align-items:center;">
+    <div class="row">
+      <!-- Home يفضل زي ما هو -->
+      <a class="btn btn-outline" href="/">Home</a>
+
+      <!-- امسح My Dashboard القديمة، وخلي BA Dashboard باسم My Dashboard -->
+      <% if (hasRole(user, 'business analyst') || hasRole(user, 'admin')) { %>
+        <a class="btn btn-outline" href="/dashboard">My Dashboard</a>
+      <% } %>
+
+      <!-- Admin utils تفضل زي ما هي -->
+      <% if (hasRole(user, 'admin')) { %>
+        <a class="btn btn-outline" href="/admin">Admin</a>
+        <a class="btn btn-outline" href="/roles">Roles</a>
+      <% } %>
+    </div>
+  </div>
+</div>

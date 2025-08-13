@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit — <%= doc.type %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    textarea{width:100%; min-height:320px; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--panel); color:var(--text)}
+    .muted{color:var(--muted); font-size:13px}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container" style="max-width:900px;">
+    <div class="header">
+      <h1 style="margin:0">Edit: <%= doc.type %> • <%= doc.projectId %></h1>
+      <a class="btn btn-outline" href="/documents/<%= doc.id %>">Back</a>
+    </div>
+
+    <form method="POST" action="/documents/<%= doc.id %>/save">
+      <textarea name="content" placeholder="Write your content here..."><%= (doc.content || '') %></textarea>
+      <div style="margin-top:12px;" class="row">
+        <button class="btn" type="submit">Save</button>
+        <a class="btn btn-outline" href="/documents/<%= doc.id %>">Cancel</a>
+      </div>
+      <p class="muted" style="margin-top:6px;">* Online content is plain text for now. Files (PDF/Word) are uploaded separately.</p>
+    </form>
+  </div>
+</body>
+</html>

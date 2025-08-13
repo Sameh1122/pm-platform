@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manager Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .grid{display:grid; gap:12px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))}
+    .tile{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px}
+    .muted{color:var(--muted); font-size:14px}
+    .rowx{display:flex; gap:8px; flex-wrap:wrap}
+    .small{font-size:12px; color:var(--muted)}
+    .badge-item{display:inline-flex; align-items:center; gap:6px}
+    .mini-form{display:inline}
+    .mini-form button{border:none; background:transparent; cursor:pointer; font-size:12px; color:#f87171}
+    .mini-form button:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1>Manager Dashboard</h1>
+        <div class="row"><a class="btn btn-outline" href="/dashboard">My Dashboard</a></div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px;">
+        <h3 style="margin:0 0 8px">Specializations you can manage</h3>
+        <div class="rowx">
+          <% specializations.forEach(s => { %><span class="badge"><%= s %></span><% }) %>
+        </div>
+      </div>
+
+      <div class="grid">
+        <% if (!projects || projects.length === 0) { %>
+          <div class="tile"><p class="muted">No projects available yet.</p></div>
+        <% } else { %>
+          <% projects.forEach(p => { %>
+            <div class="tile">
+              <h3 style="margin:0 0 6px;"><%= p.name %></h3>
+              <div class="small">ID: <%= p.id %> • <%= p.methodology %> • By: <%= p.owner?.name || p.owner?.email %></div>
+              <div class="small">Created: <%= new Date(p.createdAt).toLocaleString() %></div>
+
+              <div style="margin-top:10px;">
+                <p class="muted">Assignments:</p>
+                <% if (!p.assignments || p.assignments.length === 0) { %>
+                  <div class="badge">No assignments</div>
+                <% } else { %>
+                  <div class="rowx">
+                    <% p.assignments.forEach(a => { %>
+                      <span class="badge badge-item">
+                        <%= a.role.name %>: <%= a.user.name || a.user.email %>
+                        <!-- Remove (يسمح للـ Admin بإزالة أي تخصص، والـ Manager تخصصه فقط) -->
+                        <% 
+                          const rolesLower = (user?.userRoles || []).map(r => r.role.name.toLowerCase());
+                          const isAdmin = rolesLower.includes('admin');
+                          const MANAGED_MAP = {
+                            'business analyst manager': 'Business Analyst',
+                            'solution architect manager': 'Solution Architect',
+                            'quality control manager': 'Quality Control',
+                            'development manager': 'Developer',
+                            'uat manager': 'UAT'
+                          };
+                          const mySpecs = rolesLower.filter(r => Object.keys(MANAGED_MAP).includes(r)).map(r => MANAGED_MAP[r]);
+                          const canRemoveThis = isAdmin || mySpecs.includes(a.role.name);
+                        %>
+                        <% if (canRemoveThis) { %>
+                          <form class="mini-form" method="POST" action="/projects/<%= p.id %>/unassign">
+                            <input type="hidden" name="assignmentId" value="<%= a.id %>">
+                            <input type="hidden" name="roleId" value="<%= a.roleId %>">
+                            <button title="Remove">Remove</button>
+                          </form>
+                        <% } %>
+                      </span>
+                    <% }) %>
+                  </div>
+                <% } %>
+              </div>
+
+              <div style="margin-top:12px;" class="rowx">
+                <% specializations.forEach(s => { %>
+                  <a class="btn btn-xs" href="/projects/<%= p.id %>/assign?specialization=<%= encodeURIComponent(s) %>">Assign <%= s %></a>
+                <% }) %>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

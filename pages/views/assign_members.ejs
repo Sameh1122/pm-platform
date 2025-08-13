@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Assign <%= specialization %> — Project <%= project.name %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .grid{display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))}
+    .muted{color:var(--muted); font-size:14px}
+    .rowx{display:flex; gap:8px; flex-wrap:wrap}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container">
+    <div class="grid">
+      <div class="card">
+        <h3 style="margin:0 0 8px;">Already Assigned</h3>
+        <% if (!assigned || assigned.length === 0) { %>
+          <p class="muted">No one assigned yet.</p>
+        <% } else { %>
+          <table class="table">
+            <thead><tr><th>User</th><th>Action</th></tr></thead>
+            <tbody>
+              <% assigned.forEach(a => { %>
+                <tr>
+                  <td><%= a.user.name || a.user.email %></td>
+                  <td>
+                    <form method="POST" action="/projects/<%= project.id %>/unassign" class="row">
+                      <input type="hidden" name="assignmentId" value="<%= a.id %>">
+                      <input type="hidden" name="roleId" value="<%= a.roleId %>">
+                      <button class="btn btn-danger btn-xs" type="submit">Remove</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px;">Assign New <%= specialization %></h3>
+        <% if (!available || available.length === 0) { %>
+          <p class="muted">No available users with the "<%= specialization %>" role.</p>
+        <% } else { %>
+          <form method="POST" action="/projects/<%= project.id %>/assign">
+            <input type="hidden" name="roleId" value="<%= memberRole.id %>">
+            <div class="row" style="gap:10px;">
+              <select class="input" name="userId" required style="flex:1;">
+                <% available.forEach(u => { %>
+                  <option value="<%= u.id %>"><%= u.name || u.email %> (ID <%= u.id %>)</option>
+                <% }) %>
+              </select>
+              <button class="btn" type="submit">Assign</button>
+            </div>
+          </form>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

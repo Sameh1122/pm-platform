@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Roles</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <div class="container">
+    <div class="header">
+      <h1>Manage Roles</h1>
+      <a class="btn btn-outline" href="/admin">Back to Admin</a>
+    </div>
+
+    <div class="card">
+      <form method="POST" action="/roles/add" class="row">
+        <input class="input" type="text" name="name" placeholder="Role name" required style="max-width:260px;">
+        <button class="btn" type="submit">Add Role</button>
+      </form>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <% if (!roles || roles.length === 0) { %>
+        <p>No roles yet.</p>
+      <% } else { %>
+        <table class="table">
+          <thead><tr><th>ID</th><th>Name</th><th>Actions</th></tr></thead>
+          <tbody>
+            <% roles.forEach(r => { %>
+              <tr>
+                <td><%= r.id %></td>
+                <td>
+                  <form method="POST" action="/roles/edit" class="row">
+                    <input type="hidden" name="id" value="<%= r.id %>">
+                    <input class="input" type="text" name="name" value="<%= r.name %>" required style="max-width:240px;">
+                    <button class="btn btn-xs" type="submit">Update</button>
+                  </form>
+                </td>
+                <td>
+                  <form method="POST" action="/roles/delete" onsubmit="return confirm('Delete this role?')" class="row">
+                    <input type="hidden" name="id" value="<%= r.id %>">
+                    <button class="btn btn-danger btn-xs" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

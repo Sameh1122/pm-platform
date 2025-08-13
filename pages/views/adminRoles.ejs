@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Roles</title>
+</head>
+<body>
+  <h1>Manage Roles</h1>
+  
+  <form method="POST" action="/admin/roles">
+    <input type="text" name="name" placeholder="New role name" required>
+    <button type="submit">Add Role</button>
+  </form>
+
+  <table border="1" cellpadding="5">
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Actions</th>
+    </tr>
+    <% roles.forEach(role => { %>
+      <tr>
+        <td><%= role.id %></td>
+        <td><%= role.name %></td>
+        <td>
+          <form method="POST" action="/admin/roles/edit" style="display:inline;">
+            <input type="hidden" name="id" value="<%= role.id %>">
+            <input type="text" name="name" value="<%= role.name %>">
+            <button type="submit">Update</button>
+          </form>
+          <form method="POST" action="/admin/roles/delete" style="display:inline;" onsubmit="return confirm('Delete this role?');">
+            <input type="hidden" name="id" value="<%= role.id %>">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </table>
+
+  <p><a href="/admin">Back to Admin Panel</a></p>
+</body>
+</html>

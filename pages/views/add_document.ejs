@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Document — <%= project.name %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>.muted{color:var(--muted);font-size:13px}</style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container" style="max-width:680px;">
+    <div class="header">
+      <h1>Add Document</h1>
+      <a class="btn btn-outline" href="/projects/<%= project.id %>/preinit">Back</a>
+    </div>
+
+    <div class="card">
+      <% if (!allowed || allowed.length===0) { %>
+        <p class="muted">No allowed templates in this project. Ask Admin/PM to allow templates first.</p>
+      <% } else { %>
+        <form method="POST" action="/projects/<%= project.id %>/documents/add">
+          <div class="field">
+            <label>Template</label>
+            <select class="input" name="templateId" required>
+              <option value="">Choose template…</option>
+              <% allowed.forEach(function(a){ %>
+                <option value="<%= a.template.id %>"><%= a.template.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <button class="btn" type="submit">Create</button>
+        </form>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

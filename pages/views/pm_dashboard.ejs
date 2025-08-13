@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PM Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1>PM Dashboard</h1>
+        <div class="row">
+          <a class="btn" href="/projects/new">+ New Project</a>
+          <a class="btn btn-outline" href="/dashboard">My Dashboard</a>
+        </div>
+      </div>
+      <% if (!projects || projects.length === 0) { %>
+        <p>No projects yet. Create your first one.</p>
+      <% } else { %>
+        <table class="table">
+          <thead><tr><th>ID</th><th>Name</th><th>Methodology</th><th>Created</th><th>Open</th></tr></thead>
+          <tbody>
+            <% projects.forEach(p => { %>
+              <tr>
+                <td><%= p.id %></td>
+                <td><%= p.name %></td>
+                <td><span class="badge"><%= p.methodology %></span></td>
+                <td><%= new Date(p.createdAt).toLocaleString() %></td>
+                <td>
+                  <% if (p.methodology === 'waterfall') { %>
+                    <a class="btn btn-xs" href="/projects/<%= p.id %>/setup">Open</a>
+                  <% } else { %>
+                    <a class="btn btn-xs" href="/projects/<%= p.id %>/agile">Open</a>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

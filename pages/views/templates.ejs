@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Templates — <%= project.name %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .muted{color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    form.inline{display:inline}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+  <div class="container">
+    <div class="header">
+      <h1>Manage Templates • <%= project.name %></h1>
+      <a class="btn btn-outline" href="/projects/<%= project.id %>/preinit">Back</a>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>All Templates</h3>
+        <% if (!all || all.length===0) { %>
+          <p class="muted">No templates.</p>
+        <% } else { %>
+          <ul>
+            <% all.forEach(function(t){ %>
+              <li style="margin-bottom:8px;">
+                <strong><%= t.name %></strong>
+                <form class="inline" method="POST" action="/projects/<%= project.id %>/templates/allow">
+                  <input type="hidden" name="templateId" value="<%= t.id %>">
+                  <button class="btn btn-xs" type="submit">Allow</button>
+                </form>
+              </li>
+            <% }); %>
+          </ul>
+        <% } %>
+      </div>
+
+      <div class="card">
+        <h3>Allowed in this Project</h3>
+        <% if (!allowed || allowed.length===0) { %>
+          <p class="muted">No allowed templates yet.</p>
+        <% } else { %>
+          <ul>
+            <% allowed.forEach(function(a){ %>
+              <li style="margin-bottom:8px;">
+                <strong><%= a.template.name %></strong>
+                <form class="inline" method="POST" action="/projects/<%= project.id %>/templates/deny">
+                  <input type="hidden" name="templateId" value="<%= a.template.id %>">
+                  <button class="btn btn-outline btn-xs" type="submit">Deny</button>
+                </form>
+              </li>
+            <% }); %>
+          </ul>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= doc.type %> — <%= doc.project.name %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .muted{color:var(--muted);font-size:13px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .files{margin-top:10px}
+    .mini{font-size:12px}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container" style="max-width:900px;">
+    <div class="header">
+      <h1 style="margin:0"><%= doc.type %> • <%= doc.project.name %></h1>
+      <div class="row">
+        <a class="btn btn-outline" href="/projects/<%= doc.projectId %>/preinit">Back to Pre-Initiation</a>
+        <% if (canDeleteDoc) { %>
+          <form method="POST" action="/documents/<%= doc.id %>/delete" onsubmit="return confirm('Delete this draft document?')">
+            <button class="btn btn-danger btn-xs" type="submit">Remove Document</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="card">
+      <p><strong>Owner:</strong> <%= (doc.owner && (doc.owner.name || doc.owner.email)) || '-' %></p>
+      <p><strong>Template:</strong> <%= (doc.template && doc.template.name) || '-' %></p>
+      <p><strong>Status:</strong> <span class="status <%= doc.status %>"><%= doc.status %></span></p>
+    </div>
+
+    <div class="card">
+      <div class="header"><h2 style="margin:0">Files</h2></div>
+      <% if (!doc.files || doc.files.length===0) { %>
+        <p class="muted">No files yet.</p>
+      <% } else { %>
+        <table class="table files">
+          <thead><tr><th>Name</th><th>MIME</th><th>Size</th><th>Uploaded By</th><th>When</th><th class="mini">Actions</th></tr></thead>
+          <tbody>
+            <% doc.files.forEach(function(f){ %>
+              <tr>
+                <td><a href="<%= f.path %>" target="_blank" rel="noopener"><%= f.originalName %></a></td>
+                <td><%= f.mime %></td>
+                <td><%= (f.size/1024).toFixed(1) %> KB</td>
+                <td><%= (f.uploadedBy && (f.uploadedBy.name || f.uploadedBy.email)) || '-' %></td>
+                <td><%= new Date(f.uploadedAt).toLocaleString() %></td>
+                <td>
+                  <% if (canManageFiles) { %>
+                    <form method="POST" action="/documents/<%= doc.id %>/delete-file" onsubmit="return confirm('Delete this file?')" class="row">
+                      <input type="hidden" name="fileId" value="<%= f.id %>">
+                      <button class="btn btn-danger btn-xs" type="submit">Delete</button>
+                    </form>
+                    <form method="POST" action="/documents/<%= doc.id %>/replace-file" enctype="multipart/form-data" class="row" style="margin-top:6px;">
+                      <input type="hidden" name="oldFileId" value="<%= f.id %>">
+                      <input class="input" type="file" name="file" required>
+                      <button class="btn btn-xs" type="submit">Replace</button>
+                    </form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } %>
+
+      <% if (canManageFiles) { %>
+        <form method="POST" action="/documents/<%= doc.id %>/upload" enctype="multipart/form-data" class="row" style="margin-top:10px;">
+          <input class="input" type="file" name="file" required>
+          <button class="btn" type="submit">Upload PDF/Word</button>
+        </form>
+        <p class="muted">Allowed: PDF, DOC, DOCX.</p>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

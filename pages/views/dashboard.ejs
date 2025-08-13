@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= isAdmin ? 'Admin Dashboard' : 'Dashboard' %></title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .muted{color:var(--muted);font-size:13px}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    .table td,.table th{vertical-align:middle}
+    .chip{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:3px 10px;font-size:12px}
+    form.inline{display:inline}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+
+  <div class="container">
+
+    <div class="header">
+      <h1><%= isAdmin ? 'Admin Dashboard' : 'Dashboard' %></h1>
+    </div>
+
+    <div class="grid">
+      <% if (isAdmin) { %>
+        <div class="card">
+          <h3>Manage users, roles, and access.</h3>
+          <a class="btn" href="/admin">Open</a>
+        </div>
+        <div class="card">
+          <h3>Create and edit system roles.</h3>
+          <a class="btn" href="/roles">Open</a>
+        </div>
+      <% } %>
+      <div class="card">
+        <h3>Start a new project wizard (Waterfall/Agile).</h3>
+        <a class="btn" href="/projects/new">Create</a>
+      </div>
+    </div>
+
+    <div class="header" style="margin-top:22px;">
+      <h2>My Projects</h2>
+    </div>
+
+    <div class="card">
+      <% if (!projects || projects.length===0) { %>
+        <p class="muted">No projects yet.</p>
+      <% } else { %>
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:28%;">Name</th>
+              <th style="width:16%;">Methodology</th>
+              <th style="width:26%;">Owner</th>
+              <th style="width:12%;">Assignments</th>
+              <th style="width:18%;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% projects.forEach(function(p){ %>
+              <tr>
+                <td><strong><%= p.name %></strong></td>
+                <td><span class="chip"><%= p.methodology %></span></td>
+                <td><%= (p.owner && (p.owner.name || p.owner.email)) || '-' %></td>
+                <td><%= (p._count && p._count.assignments) || 0 %></td>
+                <td>
+                  <div class="row">
+                    <a class="btn btn-xs" href="/projects/<%= p.id %>/preinit">Open</a>
+                    <a class="btn btn-outline btn-xs" href="/projects/<%= p.id %>/assign">Assign</a>
+                    <% if (isAdmin) { %>
+                      <form class="inline" method="POST" action="/projects/<%= p.id %>/delete" onsubmit="return confirm('Delete this entire project? This cannot be undone.')">
+                        <button class="btn btn-danger btn-xs" type="submit">Delete</button>
+                      </form>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+
+  </div>
+</body>
+</html>

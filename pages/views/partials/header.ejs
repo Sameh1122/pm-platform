@@ -1,0 +1,32 @@
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .navbar { position: sticky; top:0; z-index:50; background:var(--panel); border-bottom:1px solid var(--border); box-shadow:0 6px 16px rgba(0,0,0,.25); }
+  .navwrap { max-width:1100px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; justify-content:space-between; }
+  .navleft, .navright { display:flex; align-items:center; gap:10px; }
+  .brand { font-weight:700; letter-spacing:.2px; }
+  .navlink { text-decoration:none; color:var(--text); padding:8px 12px; border-radius:10px; border:1px solid transparent; }
+  .navlink:hover { background:rgba(255,255,255,.04); border-color:var(--border); }
+  .navlink.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .avatar { font-size:12px; color:var(--muted); }
+</style>
+
+<div class="navbar">
+  <div class="navwrap">
+    <div class="navleft">
+      <span class="brand">PM Platform</span>
+      <a class="navlink <%= (path === '/' ? 'active' : '') %>" href="/">Home</a>
+      <% if (currentUser) { %>
+        <a class="navlink <%= (path && path.startsWith('/dashboard') ? 'active' : '') %>" href="/dashboard">Dashboard</a>
+      <% } %>
+    </div>
+    <div class="navright">
+      <% if (!currentUser) { %>
+        <a class="navlink" href="/login">Login</a>
+        <a class="navlink" href="/signup">Sign Up</a>
+      <% } else { %>
+        <span class="avatar"><%= currentUser.name || currentUser.email %></span>
+        <a class="navlink" href="/logout">Logout</a>
+      <% } %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <div class="container">
+    <div class="header">
+      <h1>Admin Dashboard</h1>
+      <div class="row">
+        <a class="btn btn-outline" href="/roles">Manage Roles</a>
+        <a class="btn btn-outline" href="/dashboard">Dashboard</a>
+      </div>
+    </div>
+
+    <% if (!users || users.length === 0) { %>
+      <div class="card"><p>No users found.</p></div>
+    <% } else { %>
+      <div class="card">
+        <table class="table">
+          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Roles</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            <% users.forEach(function(user) { const assignedRoles = (user.userRoles || []).map(ur => ur.role.name); %>
+              <tr>
+                <td><%= user.id %></td>
+                <td><%= user.name || '-' %></td>
+                <td><%= user.email %></td>
+                <td>
+                  <div class="row">
+                    <% if (assignedRoles.length === 0) { %>
+                      <span class="badge">No roles</span>
+                    <% } else { %>
+                      <% (user.userRoles || []).forEach(ur => { %>
+                        <span class="badge">
+                          <%= ur.role.name %>
+                          <form action="/admin/decide" method="POST" style="display:inline;">
+                            <input type="hidden" name="userId" value="<%= user.id %>">
+                            <input type="hidden" name="roleId" value="<%= ur.role.id %>">
+                            <button class="x" name="action" value="removeRole" title="Remove">✕</button>
+                          </form>
+                        </span>
+                      <% }) %>
+                    <% } %>
+                  </div>
+                  <form action="/admin/decide" method="POST" style="margin-top:8px;">
+                    <input type="hidden" name="userId" value="<%= user.id %>">
+                    <div class="row">
+                      <select class="input" name="roleId">
+                        <% roles.forEach(r => { %><option value="<%= r.id %>"><%= r.name %></option><% }) %>
+                      </select>
+                      <button class="btn btn-xs" name="action" value="assignRole">Assign</button>
+                    </div>
+                  </form>
+                </td>
+                <td><span class="status <%= user.status %>"><%= user.status %></span></td>
+                <td>
+                  <% if (user.status === 'pending') { %>
+                    <form action="/admin/decide" method="POST" class="row">
+                      <input type="hidden" name="userId" value="<%= user.id %>">
+                      <button class="btn btn-success btn-xs" name="action" value="approve">Approve</button>
+                      <button class="btn btn-danger btn-xs" name="action" value="reject">Reject</button>
+                    </form>
+                  <% } else if (user.status === 'approved') { %>
+                    <form action="/admin/decide" method="POST" class="row">
+                      <input type="hidden" name="userId" value="<%= user.id %>">
+                      <button class="btn btn-warning btn-xs" name="action" value="suspend">Suspend</button>
+                    </form>
+                  <% } else if (user.status === 'suspended') { %>
+                    <form action="/admin/decide" method="POST" class="row">
+                      <input type="hidden" name="userId" value="<%= user.id %>">
+                      <button class="btn btn-success btn-xs" name="action" value="reactivate">Reactivate</button>
+                      <button class="btn btn-danger btn-xs" name="action" value="delete" onclick="return confirm('Delete user?')">Delete</button>
+                    </form>
+                  <% } else if (user.status === 'rejected') { %>
+                    <form action="/admin/decide" method="POST" class="row">
+                      <input type="hidden" name="userId" value="<%= user.id %>">
+                      <button class="btn btn-success btn-xs" name="action" value="approve">Approve</button>
+                    </form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</body>
+</html>

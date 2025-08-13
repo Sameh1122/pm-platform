@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>New Project</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .muted{color:var(--muted);font-size:13px}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .card .field{margin-bottom:12px}
+    .radio-row{display:flex;gap:16px;align-items:center}
+    .radio-row label{display:flex;gap:6px;align-items:center}
+  </style>
+</head>
+<body>
+  <%- include('partials/header') %>
+  <%- include('partials/dashbar', { user }) %>
+  <div class="container" style="max-width:720px;">
+    <div class="header">
+      <h1>Create New Project</h1>
+      <a class="btn btn-outline" href="/dashboard">Back to Dashboard</a>
+    </div>
+    <div class="card">
+      <form method="POST" action="/projects/new">
+        <div class="field">
+          <label>Project Name</label>
+          <input class="input" type="text" name="name" placeholder="e.g., Test_Waterfall" required>
+        </div>
+        <div class="field">
+          <label>Methodology</label>
+          <div class="radio-row">
+            <label><input type="radio" name="methodology" value="waterfall" checked> Waterfall</label>
+            <label><input type="radio" name="methodology" value="agile"> Agile</label>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn" type="submit">Create Project</button>
+          <a class="btn btn-outline" href="/dashboard">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
